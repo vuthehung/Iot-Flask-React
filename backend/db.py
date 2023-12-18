@@ -1,19 +1,61 @@
-from flask_mysqldb import MySQL
-from flask import current_app
+import firebase_admin
+from firebase_admin import credentials, storage
+import os
+import threading
+import requests
+import imageio_ffmpeg as ffmpeg
 from datetime import datetime
 
-mysql = MySQL()
+cred = credentials.Certificate("serivceKey.json")
+firebase_admin.initialize_app(cred, {'storageBucket': 'gs://iot-cam-ca87b.appspot.com'})
 
-def init_db(app):
-    mysql.init_app(app)
+BUCKET_NAME = "video-security-bucket123"
+API_ENDPOINT = "http://127.0.0.1:5000/motion_detected"
 
-def save_video_info(ten):
-    try:
-        cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO videos (ten, created_at) VALUES (%s, %s)", (ten, datetime.now()))
-        mysql.connection.commit()
-        cur.close()
-        return True
-    except Exception as e:
-        print(f"Error saving video info to database: {e}")
-        return False
+bucket = storage.bucket()
+
+def upload_to_bucket(blob_name, path_to_file):
+    blob = bucket.blob(blob_name)
+    blob.content_type = 'video/mp4'
+
+    blob.upload_from_filename(path_to_file)
+
+    # Public URL
+    url = blob.public_url
+    print(f"A new file by the name of {blob_name} was created in your bucket {BUCKET_NAME}")
+    return url
+
+def handle_detection(path_to_file):
+    ffmpeg_path = 'D:\PTIT\HK7\IOT\BTL-IOT\ffmpeg-n4.4-latest-win64-gpl-4.4\bin\ffmpeg.exe'
+    def action_thread(path_to_file):
+        output_path = path_to_file.split(".mp4")[0] + "-out.mp4"
+        cmd = f'{ffmpeg_path} -i "{path_to_file}" -vf scale=-1:720 "{output_path}"'
+        os.system(cmd)
+        os.remove(path_to_file)
+        url = upload_to_bucket(path_to_file, output_path)
+        data = {
+            "url": url,
+        }
+        requests.post(API_ENDPOINT, json=data)
+
+    thread = threading.Thread(target=action_thread, args=(path_to_file,))
+    thread.start()
+
+def list_videos_in_date_range(start_date, end_date, extension=".mp4"):
+    # Convert the string dates to datetime objects
+    start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+    end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+
+    matching_files = []
+
+    # Iterate over the blobs (objects) in the bucket
+    blobs = bucket.list_blobs()
+    for blob in blobs:
+        # Check if the blob name ends with the desired file extension
+        blob_created_naive = blob.time_created.replace(tzinfo=None)
+        if blob.name.endswith(extension):
+            # Check if blob creation date is within the desired range
+            if start_datetime <= blob_created_naive <= end_datetime:
+                matching_files.append({"url": blob.public_url, "date": blob.time_created})
+
+    return matching_files

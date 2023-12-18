@@ -10,7 +10,7 @@ function SideBar() {
     
     <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
       <Container>
-        <Navbar.Brand href="/">Trang chủ</Navbar.Brand>
+        <NavLink to='/' className='text-decoration-none navbar-brand'><strong>Trang chủ</strong></NavLink>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">

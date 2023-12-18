@@ -14,9 +14,15 @@ const Control = () => {
           .then((data) => {
             setCamera1(data["armed"]);
           })
-          .catch(() => alert("Không tìm thấy camera."));
       }, []);    
 
+    useEffect(() => {
+    fetch(API_BASE + "/get-armed2")
+        .then((res) => res.json())
+        .then((data) => {
+        setCamera2(data["armed2"]);
+        })
+    }, []);   
     const handleCamera1Toggle = () => {
         const options = {
             method: "POST",
@@ -27,13 +33,17 @@ const Control = () => {
     };
 
     const handleCamera2Toggle = () => {
-    // Call your API to toggle Camera 2
-    setCamera2(!camera2);
+        const options = {
+            method: "POST",
+        };
+        setCamera2(!camera2);
+        if(camera2) fetch(API_BASE + "/disarm2", options)
+        else fetch(API_BASE + "/arm2", options)
     };
 
   return (
-        <Container className="justify-content-center align-items-center vh-100">
-            <Row>
+        <Container>
+            <Row >
                 <Col >
                     <span>Camera trước cửa nhà</span>
                     <div>

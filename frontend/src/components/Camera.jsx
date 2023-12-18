@@ -4,20 +4,32 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 const Camera = () => {
-    const [streamUrl, setStreamUrl] = useState("");
-    const [isStreaming, setIsStreaming] = useState(true);
+    const [streamUrl1, setStreamUrl1] = useState("");
+    const [streamUrl2, setStreamUrl2] = useState("");
+    const [isStreaming1, setIsStreaming1] = useState(true);
+    const [isStreaming2, setIsStreaming2] = useState(true);
 
     const handleStartStream = () => {
-    setStreamUrl('http://127.0.0.1:5000/stream');
-    setIsStreaming(true);
+    setStreamUrl1('http://127.0.0.1:5000/stream');
+    setIsStreaming1(true);
     };
 
     const handleStopStream = () => {
     // Đặt URL của video thành một URL trống hoặc URL khác để dừng stream
-    setStreamUrl('');
-    setIsStreaming(false);
+    setStreamUrl1('');
+    setIsStreaming1(false);
     };
-
+    
+    const handleStartStream2 = () => {
+        setStreamUrl2('http://127.0.0.1:5000/stream2');
+        setIsStreaming2(true);
+        };
+    
+    const handleStopStream2 = () => {
+        // Đặt URL của video thành một URL trống hoặc URL khác để dừng stream
+        setStreamUrl2('');
+        setIsStreaming2(false);
+    };
     return (
         <Container>
             <Row>
@@ -27,7 +39,7 @@ const Camera = () => {
                         <button onClick={handleStartStream}>Start Stream</button>
                         <button onClick={handleStopStream}>Stop Stream</button>
                         <div>
-                            <img src={streamUrl} width='100%' height='100%'/>
+                            <img src={streamUrl1} width='100%' height='100%' alt='Camera đã tắt'/>
                         </div>
                     
                     </div>
@@ -35,10 +47,10 @@ const Camera = () => {
                 <Col>
                     <span>Camera phòng khách</span>
                     <div>   
-                        <button onClick={handleStartStream}>Start Stream</button>
-                        <button onClick={handleStopStream}>Stop Stream</button>
+                        <button onClick={handleStartStream2}>Start Stream</button>
+                        <button onClick={handleStopStream2}>Stop Stream</button>
                         <div>
-                            <img src={streamUrl} width='100%' height='100%'/>
+                            <img src={streamUrl2} width='100%' height='100%' alt='Camera đã tắt'/>
                         </div>
                     
                     </div>
